@@ -96,7 +96,7 @@ symptoms_dict = {
         }
     },
     '9': {
-        'name': "Centralny układ nerwowy (ból głowy, wymioty, drgawki, senność, śpiączka)",
+        'name': "Centralny układ nerwowy",
         'values': {
             1: 'tak',
             2: 'nie'
@@ -117,7 +117,7 @@ symptoms_dict = {
         }
     },
     '12': {
-        'name': 'Gałka oczna, zaburzenia widzenia, krwiawienie do siatkówki, wytrzeszcz oczu',
+        'name': 'Gałka oczna',
         'values': {
             1: 'tak',
             2: 'nie'
@@ -132,7 +132,7 @@ symptoms_dict = {
         }
     },
     '14': {
-        'name': 'Obniżenie liczby RBC (erytrocytów?)',
+        'name': 'Obniżenie liczby RBC',
         'values': {
             1: 'lekkie',
             2: 'średnie',
@@ -147,7 +147,7 @@ symptoms_dict = {
         }
     },
     '16': {
-        'name': 'Niedojrzałe komórki (blastyczne?)',
+        'name': 'Niedojrzałe komórki',
         'values': {
             1: 'istnieją',
             2: 'nie istnieją',
@@ -178,7 +178,7 @@ symptoms_dict = {
         }
     },
     '20': {
-        'name': "Reakcja (Test chemiczny tkanki)",
+        'name': "Reakcja",
         "values": {
             1: "pozytywna",
             2: "negatywna"
