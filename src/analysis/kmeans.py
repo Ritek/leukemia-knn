@@ -15,7 +15,7 @@ leukemia_data = pd.read_csv(LEUKEMIA_MASTER_PATH)
 leukemia_data.drop('class', axis=1, inplace=True)
 leukemia_data.rename(columns=symptoms_name_dict, inplace=True)
 
-clusters = 20
+clusters = 10
 kmeans = KMeans(n_clusters=clusters)
 kmeans.fit(leukemia_data)
 print(kmeans.labels_)
