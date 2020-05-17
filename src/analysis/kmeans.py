@@ -1,4 +1,6 @@
 import math
+import sys
+import copy
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -7,18 +9,49 @@ from matplotlib import colors as mcolors
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.model_selection import RepeatedStratifiedKFold
 
-from src.reader.columns import symptoms_name_dict
-from src.reader.dir import LEUKEMIA_MASTER_PATH
+#
+from sklearn.model_selection import train_test_split
+import numpy as np
+#
+
+#from src.reader.columns import symptoms_name_dict
+#from src.reader.dir import LEUKEMIA_MASTER_PATH
+
+sys.path.append('C:/Users/writh/Desktop/leukemia-knn/src')
+from reader.columns import symptoms_name_dict
+from reader.dir import LEUKEMIA_MASTER_PATH
 
 leukemia_data = pd.read_csv(LEUKEMIA_MASTER_PATH)
+leukimia_full = pd.read_csv(LEUKEMIA_MASTER_PATH)
+#print(leukimia_full)
+
 leukemia_data.drop('class', axis=1, inplace=True)
 leukemia_data.rename(columns=symptoms_name_dict, inplace=True)
+leukimia_full.rename(columns=symptoms_name_dict, inplace=True)
+#print(leukimia_full['class'])
 
 clusters = 10
 kmeans = KMeans(n_clusters=clusters)
 kmeans.fit(leukemia_data)
-print(kmeans.labels_)
+#print(kmeans.labels_)
+
+#
+
+# Split data randomly in two. One group for training and one for testing
+#leukemia_train, leukemia_test = train_test_split(leukemia_data, test_size=0.5, random_state=42)
+leuk_class = leukimia_full.iloc[:,20:21].values
+leuk_rest = leukimia_full.iloc[:,0:20].values
+
+
+rskf = RepeatedStratifiedKFold(n_splits=2, n_repeats=10, random_state=36851234)
+for train_index, test_index in rskf.split(leuk_rest, leuk_class):
+    #print("TRAIN:", train_index, "TEST:", test_index, sep="\n")
+    X_train, X_test = leuk_rest[train_index], leuk_rest[test_index]
+    y_train, y_test = leuk_class[train_index], leuk_class[test_index]
+
+#
 
 pca = PCA(3)
 pca.fit(leukemia_data)
@@ -26,15 +59,16 @@ pca_data = pd.DataFrame(pca.transform(leukemia_data))
 
 ''' 
 Generating different colors in ascending order  of their hsv values
- '''
+'''
+
 colors = list(zip(*sorted((
-                              tuple(mcolors.rgb_to_hsv(
-                                  mcolors.to_rgba(color)[:3])), name)
-                          for name, color in dict(
-    mcolors.BASE_COLORS, **mcolors.CSS4_COLORS
+    tuple(mcolors.rgb_to_hsv(
+        mcolors.to_rgba(color)[:3])), name)
+            for name, color in dict(
+                mcolors.BASE_COLORS, **mcolors.CSS4_COLORS
 ).items())))[1]
 
-# number of steps to taken generate n(clusters) colors
+# number of steps taken to generate n(clusters) colors
 skips = math.floor(len(colors[5: -5]) / clusters)
 cluster_colors = colors[5: -5: skips]
 
