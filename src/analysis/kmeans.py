@@ -1,6 +1,5 @@
 import math
 import sys
-import copy
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,6 +12,8 @@ from sklearn.model_selection import RepeatedStratifiedKFold
 
 #
 from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
 import numpy as np
 #
 
@@ -25,34 +26,40 @@ from reader.dir import LEUKEMIA_MASTER_PATH
 
 leukemia_data = pd.read_csv(LEUKEMIA_MASTER_PATH)
 leukimia_full = pd.read_csv(LEUKEMIA_MASTER_PATH)
-#print(leukimia_full)
 
 leukemia_data.drop('class', axis=1, inplace=True)
 leukemia_data.rename(columns=symptoms_name_dict, inplace=True)
 leukimia_full.rename(columns=symptoms_name_dict, inplace=True)
-#print(leukimia_full['class'])
 
 clusters = 10
 kmeans = KMeans(n_clusters=clusters)
-kmeans.fit(leukemia_data)
+#kmeans.fit(leukemia_data)
 #print(kmeans.labels_)
 
 #
-
-# Split data randomly in two. One group for training and one for testing
-#leukemia_train, leukemia_test = train_test_split(leukemia_data, test_size=0.5, random_state=42)
 leuk_class = leukimia_full.iloc[:,20:21].values
 leuk_rest = leukimia_full.iloc[:,0:20].values
 
+neigh = KNeighborsClassifier(n_neighbors=12)
+scores = []
 
 rskf = RepeatedStratifiedKFold(n_splits=2, n_repeats=10, random_state=36851234)
 for train_index, test_index in rskf.split(leuk_rest, leuk_class):
     #print("TRAIN:", train_index, "TEST:", test_index, sep="\n")
     X_train, X_test = leuk_rest[train_index], leuk_rest[test_index]
     y_train, y_test = leuk_class[train_index], leuk_class[test_index]
+    
+    y_train_ravel = np.ravel(y_train)
+    neigh.fit(X_train, y_train_ravel)
+    predict = neigh.predict(X_test)
+    scores.append(accuracy_score(y_test, predict))
 
+mean_score = np.mean(scores)
+std_score = np.std(scores)
+print("Accuracy score: %.3f (%.3f)" % (mean_score, std_score))
 #
 
+"""
 pca = PCA(3)
 pca.fit(leukemia_data)
 pca_data = pd.DataFrame(pca.transform(leukemia_data))
@@ -124,3 +131,4 @@ ax.plot_trisurf(plot_df[0], plot_df[1], plot_df[2],
                 cmap=cm.jet, linewidth=0.2)
 
 plt.show()
+"""
