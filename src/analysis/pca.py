@@ -1,7 +1,11 @@
+import sys
+
 import pandas as pd
 from sklearn.decomposition import PCA
 from matplotlib import colors as mcolors
 import math
+
+sys.path.append('C:/Users/writh/Desktop/leukemia-knn')
 from src.reader.dir import LEUKEMIA_MASTER_PATH
 
 

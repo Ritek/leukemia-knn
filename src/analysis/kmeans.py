@@ -1,5 +1,6 @@
 import math
 import sys
+import copy
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -10,19 +11,18 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.model_selection import RepeatedStratifiedKFold
 
-#
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+from sklearn.feature_selection import SelectKBest, chi2
+from scipy import stats
 import numpy as np
-#
 
-#from src.reader.columns import symptoms_name_dict
-#from src.reader.dir import LEUKEMIA_MASTER_PATH
 
-sys.path.append('C:/Users/writh/Desktop/leukemia-knn/src')
-from reader.columns import symptoms_name_dict
-from reader.dir import LEUKEMIA_MASTER_PATH
+sys.path.append('C:/Users/writh/Desktop/leukemia-knn')
+from src.reader.columns import symptoms_name_dict
+from src.reader.dir import LEUKEMIA_MASTER_PATH
 
 leukemia_data = pd.read_csv(LEUKEMIA_MASTER_PATH)
 leukimia_full = pd.read_csv(LEUKEMIA_MASTER_PATH)
@@ -31,18 +31,28 @@ leukemia_data.drop('class', axis=1, inplace=True)
 leukemia_data.rename(columns=symptoms_name_dict, inplace=True)
 leukimia_full.rename(columns=symptoms_name_dict, inplace=True)
 
+# === kmeans clustering ===
 clusters = 10
 kmeans = KMeans(n_clusters=clusters)
-#kmeans.fit(leukemia_data)
+kmeans.fit(leukemia_data)
 #print(kmeans.labels_)
+# === / kmeans clustering ===
 
-#
-leuk_class = leukimia_full.iloc[:,20:21].values
-leuk_rest = leukimia_full.iloc[:,0:20].values
+# === kmeans testing ===
+# Kolmogrov-Smiernov -> 11, 17, 12, 18, 4, 16, 1, 8, 13, 14, 20, 5, 7
+# SelectKBest ->        4, 17, 19, 2, 14, 18, 12, 15, 6, 10, 13, 20
+feature_index = [4, 17, 19, 2, 14, 18, 12, 15, 6, 10, 13, 20] # indexes of features to use
+leuk_class = leukimia_full.iloc[:, 20:21].values
+leuk_rest = leukimia_full.iloc[:, feature_index].values
 
-neigh = KNeighborsClassifier(n_neighbors=12)
+print(leuk_rest)
+
+neigh = KNeighborsClassifier(n_neighbors=9)
 scores = []
 
+# k = 7 -> 0.303
+# k = 5 -> 0.288
+# k = 2 -> 0.252
 rskf = RepeatedStratifiedKFold(n_splits=2, n_repeats=10, random_state=36851234)
 for train_index, test_index in rskf.split(leuk_rest, leuk_class):
     #print("TRAIN:", train_index, "TEST:", test_index, sep="\n")
@@ -57,7 +67,42 @@ for train_index, test_index in rskf.split(leuk_rest, leuk_class):
 mean_score = np.mean(scores)
 std_score = np.std(scores)
 print("Accuracy score: %.3f (%.3f)" % (mean_score, std_score))
-#
+# === / kmeans testing ===
+
+""" 
+# === Kolmogrov-Smiernov ===
+feature_score = []
+features_kolmogrov = leukimia_full.iloc[:, 0:20]
+feat_class_1, feat_class_2 = train_test_split(features_kolmogrov, test_size=0.5, random_state=42)
+for i in range(20):
+    feature_score.append(stats.ks_2samp(feat_class_1.iloc[:, i], feat_class_2.iloc[:, i]))
+
+print("Feature score Kolmogrov-Smiernov: ")
+print(pd.DataFrame(feature_score))
+print()
+# === Kolmogrov-Smiernov ===
+
+# === SelectKBest ===
+X_select = leukimia_full.iloc[:, 0:20]
+#print(X_select)
+y_select = leukimia_full.iloc[:, 20:21]
+#print(y_select)
+selected_features = SelectKBest(chi2, k='all').fit(X_select, y_select)
+print("Feature SelectKBest: ")
+print(pd.DataFrame(selected_features.scores_))
+print()
+# === SelectKBest === 
+"""
+
+
+
+
+
+
+
+
+
+
 
 """
 pca = PCA(3)
@@ -65,7 +110,7 @@ pca.fit(leukemia_data)
 pca_data = pd.DataFrame(pca.transform(leukemia_data))
 
 ''' 
-Generating different colors in ascending order  of their hsv values
+Generating different colors in ascending order of their hsv values
 '''
 
 colors = list(zip(*sorted((
@@ -93,6 +138,8 @@ list(map(lambda data1, data2, data3, str_label:
          pca_data[2], str_labels))
 
 plt.show()
+
+
 sns.set(rc={'figure.figsize': (20, 10)})
 sns.heatmap(leukemia_data.corr(), annot=True)
 plt.show()
@@ -105,8 +152,7 @@ df.index = range(0, len(df))
 df.rename(columns=dict(zip(df.columns, df.index)), inplace=True)
 df = df.astype(object)
 
-''' Generating coordinates with  
-corresponding correlation values '''
+''' Generating coordinates with corresponding correlation values '''
 for i in range(0, len(df)):
     for j in range(0, len(df)):
         if i != j:
