@@ -1,4 +1,9 @@
+import sys
+import os
+import pathlib
+
 from sklearn.neighbors import KNeighborsClassifier
+sys.path.append('C:/Users/writh/Desktop/leukemia-knn')
 
 from src.preprocessing.train_data import train_test_data
 

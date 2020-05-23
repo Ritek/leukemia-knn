@@ -1,6 +1,11 @@
+import sys
+
 from numpy.ma import arange
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
+
+sys.path.append('C:/Users/writh/Desktop/leukemia-knn')
+
 from src.preprocessing.train_data import feature_class_data
 
 X, Y = feature_class_data()

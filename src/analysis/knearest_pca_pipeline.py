@@ -1,3 +1,5 @@
+import sys
+
 from numpy.ma import arange
 from sklearn.decomposition import PCA
 from sklearn.model_selection import GridSearchCV
@@ -5,6 +7,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, Normalizer
 
+sys.path.append('C:/Users/writh/Desktop/leukemia-knn')
 from src.preprocessing.train_data import feature_class_data
 
 # KNN works poorly for high-dimensional data - use PCA
